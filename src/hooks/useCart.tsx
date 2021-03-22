@@ -19,25 +19,67 @@ interface CartContextData {
   updateProductAmount: ({ productId, amount }: UpdateProductAmount) => void;
 }
 
+interface ProductApi {
+  id: number;
+  title: string;
+  price: number;
+  image: string;
+}
+
 const CartContext = createContext<CartContextData>({} as CartContextData);
 
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(() => {
-    // const storagedCart = Buscar dados do localStorage
+    const storagedCart = localStorage.getItem('@RocketShoes:cart');
 
-    // if (storagedCart) {
-    //   return JSON.parse(storagedCart);
-    // }
+    if (storagedCart) {
+      return JSON.parse(storagedCart);
+    }
 
     return [];
   });
 
   const addProduct = async (productId: number) => {
+    const { data: stockData } = await api.get<Stock>(`stock/${productId}`);
     try {
-      // TODO
-    } catch {
-      // TODO
+     
+    
+    const productIntheCart = cart.find(
+      (cartProduct) => cartProduct.id === productId
+    );
+    const amount = productIntheCart ? productIntheCart.amount + 1 : 1;
+    if (amount > stockData.amount) {
+      toast.error('quantidade solicitada fora do estoque');
+      return;
     }
+    if (productIntheCart) {
+      const addNewProduct = cart.map((cartAdd) => {
+        if (cartAdd.id === productId) {
+          return {
+            ...productIntheCart,
+            amount: cartAdd.amount + 1,
+          };
+        }
+        return cartAdd;
+      });
+      setCart(addNewProduct);
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(addNewProduct));
+      return;
+    }
+    const { data: productData } = await api.get<ProductApi>(
+      `products/${productId}`
+    );
+    const addProductInCart = {
+      ...productData,
+      amount: 1,
+    };
+    const Arrayproducts = [...cart, { ...addProductInCart }];
+    setCart(Arrayproducts);
+
+    localStorage.setItem('@RocketShoes:cart', JSON.stringify(Arrayproducts));
+  }catch{
+    toast.error('Erro na adição do produto')
+  }
   };
 
   const removeProduct = (productId: number) => {
