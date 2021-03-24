@@ -37,6 +37,7 @@ const Cart = (): JSX.Element => {
       amount: product.amount + 1,
       productId: product.id,
     });
+    
   }
 
   function handleProductDecrement(product: Product) {
@@ -65,7 +66,7 @@ const Cart = (): JSX.Element => {
           </thead>
           <tbody>
             {cartFormatted.map((product) => (
-              <tr data-testid="product">
+              <tr data-testid="product" key={product.id}>
                 <td>
                   <img
                     src="https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis1.jpg"
@@ -83,6 +84,7 @@ const Cart = (): JSX.Element => {
                       data-testid="decrement-product"
                       disabled={product.amount <= 1}
                       onClick={() => handleProductDecrement(product)}
+                      
                     >
                       <MdRemoveCircleOutline size={20} />
                     </button>
@@ -90,7 +92,7 @@ const Cart = (): JSX.Element => {
                       type="text"
                       data-testid="product-amount"
                       readOnly
-                      value={2}
+                      value={product.amount}
                     />
                     <button
                       type="button"
